@@ -8,7 +8,9 @@ var methodOverride = require('method-override'); // simulate DELETE and PUT (exp
 var cors = require('cors');
 
 // Configuration
-mongoose.connect('mongodb://localhost/reviewking');
+mongoose.connect('mongodb://localhost/reviewi', {
+    useMongoClient: true
+});
 
 app.use(morgan('dev'));                                         // log every request to the console
 app.use(bodyParser.urlencoded({ 'extended': 'true' }));            // parse application/x-www-form-urlencoded
@@ -29,7 +31,7 @@ var Review = mongoose.model('Review', {
     title: String,
     description: String,
     rating: Number
-});
+}, 'review');
 
 // Routes
 
@@ -37,24 +39,19 @@ var Review = mongoose.model('Review', {
 app.get('/api/reviews', function (req, res) {
 
     console.log("fetching reviews");
-
-    // use mongoose to get all reviews in the database
     Review.find(function (err, reviews) {
-
-        // if there is an error retrieving, send the error. nothing after res.send(err) will execute
-        if (err)
+        console.log(reviews);
+        if (err) {
             res.send(err)
-
-        res.json(reviews); // return all reviews in JSON format
+        }
+        res.json(reviews);
     });
 });
 
-// create review and send back all reviews after creation
 app.post('/api/reviews', function (req, res) {
 
     console.log("creating review");
 
-    // create a review, information comes from request from Ionic
     Review.create({
         title: req.body.title,
         description: req.body.description,
@@ -64,7 +61,6 @@ app.post('/api/reviews', function (req, res) {
         if (err)
             res.send(err);
 
-        // get and return all the reviews after you create another
         Review.find(function (err, reviews) {
             if (err)
                 res.send(err)
@@ -74,7 +70,6 @@ app.post('/api/reviews', function (req, res) {
 
 });
 
-// delete a review
 app.delete('/api/reviews/:review_id', function (req, res) {
     Review.remove({
         _id: req.params.review_id
@@ -84,6 +79,5 @@ app.delete('/api/reviews/:review_id', function (req, res) {
 });
 
 
-// listen (start app with node server.js) ======================================
 app.listen(8080);
 console.log("App listening on port 8080");
